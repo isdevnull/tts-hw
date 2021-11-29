@@ -1,5 +1,3 @@
-import math
-
 import torch.nn as nn
 import torch
 import torch.nn.functional as F
@@ -19,14 +17,11 @@ class LengthRegulator(nn.Module):
         if teacher_durations is not None:
             pred_num_timeframes = torch.round(teacher_durations * self.alpha * mel_spec_length).int().view(x.size(0),
                                                                                                            -1)
-            print(x.size())
-            print(pred_num_timeframes.size())
         else:
             pred_num_timeframes = torch.round(torch.exp(log_pred) * self.alpha).int().view(x.size(0), -1)
         x = torch.stack(
             [F.pad(x[i, ...].repeat_interleave(pred_num_timeframes[i, ...], dim=0),
-                   (0, 0, 0, mel_spec_length - pred_num_timeframes[i].sum())) for i in range(x.size(0))],
+                   (0, 0, 0, mel_spec_length - pred_num_timeframes[i].sum()), value=0.0) for i in range(x.size(0))],
             dim=0
         )
-        print(x.shape)
         return x, log_pred
