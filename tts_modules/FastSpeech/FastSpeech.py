@@ -5,6 +5,7 @@ from tts_modules.FastSpeech.Blocks.LengthRegulator import LengthRegulator
 from tts_modules.FastSpeech.Blocks.Transformer.FeedForwardTransformer import FeedForwardTransformer
 from tts_modules.FastSpeech.Blocks.Transformer.GraphemeEmbedding import GraphemeEmbedding
 from tts_modules.FastSpeech.Blocks.Transformer.PositionalEncoding import PositionalEncoding
+from tts_modules.FastSpeech.Blocks.Transformer.utils import get_mask
 
 
 class FastSpeech(nn.Module):
@@ -35,19 +36,22 @@ class FastSpeech(nn.Module):
         self.final_projection = nn.Linear(in_features=embed_dim, out_features=n_mels)
 
     def forward(self, x, teacher_durations: torch.Tensor = None, mel_spec_length: int = None):
+        mask1 = get_mask(x).unsqueeze(-2)
         embeddings = self.token_embeddings(x)
         positional_embeddings = self.pos_enc_layer(embeddings)
 
         for fft_block in self.first_fft_block:
-            positional_embeddings = fft_block(positional_embeddings, mask=None)
+            positional_embeddings = fft_block(positional_embeddings, mask=mask1)
         first_hidden_output = positional_embeddings
 
         aligned_hidden, log_duration_prediction = self.length_regulator(first_hidden_output, teacher_durations,
                                                                         mel_spec_length)
+        mask2 = get_mask(aligned_hidden)
+        mask2 = mask2.all(dim=2).unsqueeze(-2)
         positional_aligned_hidden = self.pos_enc_layer(aligned_hidden)
 
         for fft_block in self.second_fft_block:
-            positional_aligned_hidden = fft_block(positional_aligned_hidden, mask=None)
+            positional_aligned_hidden = fft_block(positional_aligned_hidden, mask=mask2)
         second_hidden_output = positional_aligned_hidden
 
         predicted_mel_spec = self.final_projection(second_hidden_output)
