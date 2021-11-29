@@ -62,8 +62,7 @@ class MelSpectrogram(nn.Module):
         mel = self.mel_spectrogram(audio) \
             .clamp_(min=1e-5) \
             .log_()
-        if not mel.size(-1) % 2 == 0:
-            mel = F.pad(mel, (0, 1), value=self.config.pad_value)
+
         return mel
 
 

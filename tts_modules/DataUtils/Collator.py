@@ -34,10 +34,6 @@ class LJSpeechCollator:
         tokens = pad_sequence([
             tokens_[0] for tokens_ in tokens
         ]).transpose(0, 1)
-        #  introduce additional padding to the right to make divisible by two (number of attention heads)
-
-        if not tokens.size(-1) % 2 == 0:
-            tokens = F.pad(tokens, (0, 1), value=0)
 
         token_lengths = torch.cat(token_lengths)
 
