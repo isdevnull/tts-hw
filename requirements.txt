@@ -3,3 +3,5 @@ torch
 matplotlib
 librosa
 wandb
+torchinfo
+numpy
