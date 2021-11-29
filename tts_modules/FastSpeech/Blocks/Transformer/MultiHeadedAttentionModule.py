@@ -1,16 +1,26 @@
+from typing import Union, Tuple
+
 import torch
 import torch.nn.functional as F
 import torch.nn as nn
 import math
 
 
-def attention(key: torch.Tensor, value: torch.Tensor, query: torch.Tensor, mask=None):
+def attention(
+        key: torch.Tensor,
+        value: torch.Tensor,
+        query: torch.Tensor,
+        mask=None,
+        return_attention: bool = False) -> \
+        Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
     d_k = query.size(-1)
     score = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
-    if mask:
-        score = score.masked_fill_(mask == 0, -5e-12)
+    if mask is not None:
+        score = score.masked_fill(mask == 0, -5e-12)
     attention_score = F.softmax(score, dim=-1)
     output = torch.matmul(attention_score, value)
+    if return_attention:
+        return output, attention_score
     return output
 
 
@@ -28,10 +38,12 @@ class MultiHeadedAttention(nn.Module):
         self.final_proj = nn.Linear(self.n_heads * self.d_v, self.d_model)
 
     def forward(self, key: torch.Tensor, value: torch.Tensor, query: torch.Tensor, mask=None):
+        if mask is not None:
+            mask = mask.unsqueeze(1)
         batch_size = query.size(0)
         key_proj, query_proj, value_proj = \
             [
-                weight_proj(param).view(batch_size, self.n_heads, -1, param.size(-1)) for weight_proj, param in
+                weight_proj(param).view(batch_size, self.n_heads, -1, self.d_k) for weight_proj, param in
                 zip(self.kqv_weights, (key, query, value))
             ]
         output_values = attention(key_proj, value_proj, query_proj, mask=mask)
