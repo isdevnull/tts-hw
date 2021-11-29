@@ -4,6 +4,7 @@ from typing import List, Union
 import torchaudio
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from torch.nn.utils.rnn import pad_sequence
 
@@ -84,6 +85,8 @@ class GraphemeAligner(nn.Module):
             durations.append(relative_durations)
 
         durations = pad_sequence(durations).transpose(0, 1)
+        if not durations.size(-1) % 2 == 0:
+            durations = F.pad(durations, (0, 1), value=0.0)
         return durations
 
     @staticmethod
