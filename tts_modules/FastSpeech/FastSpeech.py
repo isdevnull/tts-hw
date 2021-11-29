@@ -34,7 +34,7 @@ class FastSpeech(nn.Module):
         )
         self.final_projection = nn.Linear(in_features=embed_dim, out_features=n_mels)
 
-    def forward(self, x, teacher_durations: torch.Tensor = None, mel_spec_lengths: torch.Tensor = None):
+    def forward(self, x, teacher_durations: torch.Tensor = None, mel_spec_length: int = None):
         embeddings = self.token_embeddings(x)
         positional_embeddings = self.pos_enc_layer(embeddings)
 
@@ -43,7 +43,7 @@ class FastSpeech(nn.Module):
         first_hidden_output = positional_embeddings
 
         aligned_hidden, log_duration_prediction = self.length_regulator(first_hidden_output, teacher_durations,
-                                                                        mel_spec_lengths)
+                                                                        mel_spec_length)
         positional_aligned_hidden = self.pos_enc_layer(aligned_hidden)
 
         for fft_block in self.second_fft_block:
