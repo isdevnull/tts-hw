@@ -84,50 +84,52 @@ class FastSpeechTrainer:
             "predicted_spectrogram": pred_mel_specs,
             "predicted_log_durations": pred_log_durations,
             "mel_loss": mel_loss,
-            "dur_loss": dur_loss.item(),
+            "dur_loss": dur_loss,
             "loss": loss
         }
 
     def train_epoch(self, train_dataloader):
         self.model.train()
 
-        self.optimizer.zero_grad()
+
 
         for batch in train_dataloader:
             step_results = self.batch_step(batch)
 
-        if self.step % self.params["logging_step"] == 0:
+            if self.step % self.params["logging_step"] == 0:
+                if self.scheduler is not None:
+                    step_results["cur_lr"] = self.scheduler.get_last_lr()
+                logging.info(
+                    f"step {self.step}: loss = {step_results['loss'].item()} | "
+                    f"mel_loss = {step_results['mel_loss'].item()} | "
+                    f"dur_loss = {step_results['dur_loss'].item()} "
+                )
+                wandb.log(
+                    {
+                        "loss": step_results["loss"].item(),
+                        "mel_loss": step_results["mel_loss"].item(),
+                        "dur_loss": step_results["dur_loss"].item(),
+                        "learning_rate": step_results["cur_lr"].item()
+                    }
+                )
+                if self.config["model"]["return_attention"]:
+                    idx = np.random.choice(self.config["batch_size"], replace=False)
+                    for i, attention_score in enumerate(self.model.attention_scores):
+                        for head in range(2):
+                            image = PIL.Image.open(plot_image_to_buf(attention_score[idx, head, :, :].cpu().numpy()))
+                            wandb.log({
+                                f"Attention-{i}-head-{head}": wandb.Image(image)
+                            })
+            step_results["loss"].backward()
+            self.optimizer.step()
             if self.scheduler is not None:
-                step_results["cur_lr"] = self.scheduler.get_last_lr()
-            logging.info(
-                f"step {self.step}: loss = {step_results['loss'].item()} | "
-                f"mel_loss = {step_results['mel_loss']} | "
-                f"dur_loss = {step_results['dur_loss']} "
-            )
-            wandb.log(
-                {
-                    "loss": step_results["loss"].item(),
-                    "mel_loss": step_results["mel_loss"],
-                    "dur_loss": step_results["dur_loss"],
-                    "learning_rate": step_results["cur_lr"]
-                }
-            )
-            if self.config["model"]["return_attention"]:
-                idx = np.random.choice(self.config["batch_size"], replace=False)
-                for i, attention_score in enumerate(self.model.attention_scores):
-                    for head in range(2):
-                        image = PIL.Image.open(plot_image_to_buf(attention_score[idx, head, :, :].cpu().numpy()))
-                        wandb.log({
-                            f"Attention-{i}-head-{head}": wandb.Image(image)
-                        })
+                self.scheduler.step()
 
-        if self.step % self.params["checkpoint_interval"] == 0:
-            self._save_checkpoint()
+            if self.step % self.params["checkpoint_interval"] == 0:
+                self._save_checkpoint()
 
-        step_results["loss"].backward()
-        self.optimizer.step()
-        if self.scheduler is not None:
-            self.scheduler.step()
+
+
 
     @torch.no_grad()
     def validation_epoch(self, val_dataloader):
