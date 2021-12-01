@@ -72,8 +72,8 @@ class FastSpeechTrainer:
         pred_mel_specs, pred_log_durations = self.model(batch.tokens.to(self.device),
                                                         teacher_durations=mel_durations,
                                                         mel_spec_length=max_timeframe_length)
-        mel_loss = self.mel_loss(pred_mel_specs, reference_mel_specs)
-        dur_loss = self.duration_loss(pred_log_durations, mel_durations)
+        mel_loss = self.mel_loss(pred_mel_specs.transpose(1, 2), reference_mel_specs)
+        dur_loss = self.duration_loss(pred_log_durations.squeeze(-1), mel_durations)
         loss = mel_loss + dur_loss
         self.step += 1
 
