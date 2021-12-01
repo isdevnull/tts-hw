@@ -167,7 +167,7 @@ class FastSpeechTrainer:
         })
 
         if self.params["log_audio"]:
-            reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :]).cpu()
+            reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :].unsqueeze(0)).cpu()
             original_waveform = batch.waveform[random_idx]
             plt.plot(reconstructed_wav.squeeze(), label='reconstructed', alpha=.5)
             plt.plot(original_waveform.squeeze(), label='GT', alpha=.5)
