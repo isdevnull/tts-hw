@@ -107,7 +107,7 @@ class FastSpeechTrainer:
                     "learning_rate": step_results["cur_lr"]
                 }
             )
-            if self.params["return_attention"]:
+            if self.config["model"]["return_attention"]:
                 idx = np.random.choice(self.config["batch_size"], replace=False)
                 for i, attention_score in enumerate(self.model.attention_scores):
                     for head in range(2):
