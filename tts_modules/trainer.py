@@ -178,7 +178,7 @@ class FastSpeechTrainer:
             })
 
     def train(self, train_dataloader, valid_dataloader):
-        for epoch in self.config["epochs"]:
+        for epoch in range(self.config["epochs"]):
             self.epoch = epoch
             logger.info(f"Starting training on epoch {self.epoch}...")
             self.train_epoch(train_dataloader)
