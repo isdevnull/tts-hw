@@ -11,6 +11,7 @@ import sys
 from tts_modules.utils import plot_image_to_buf
 from tts_modules.Vocoder.waveglow import Vocoder
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 root = Path(__name__).parent.parent
@@ -72,8 +73,10 @@ class FastSpeechTrainer:
         pred_mel_specs, pred_log_durations = self.model(batch.tokens.to(self.device),
                                                         teacher_durations=mel_durations,
                                                         mel_spec_length=max_timeframe_length)
-        mel_loss = self.mel_loss(pred_mel_specs.transpose(1, 2), reference_mel_specs)
-        dur_loss = self.duration_loss(pred_log_durations.squeeze(-1), mel_durations)
+        pred_mel_specs = pred_mel_specs.transpose(1,2)
+        pred_log_durations = pred_log_durations.squeeze(-1)
+        mel_loss = self.mel_loss(pred_mel_specs, reference_mel_specs)
+        dur_loss = self.duration_loss(pred_log_durations, mel_durations)
         loss = mel_loss + dur_loss
         self.step += 1
 
@@ -138,10 +141,10 @@ class FastSpeechTrainer:
             random_idx = np.random.choice(self.config["batch_size"])
             predicted_spectrogram = None
 
-        for i, batch in enumerate(val_dataloader):
+        for batch in enumerate(val_dataloader):
             step_results = self.batch_step(batch)
 
-            if self.params["log_audio"] and i == random_idx:
+            if self.params["log_audio"]:
                 predicted_spectrogram = step_results["predicted_spectrogram"]
             metric_tracker["loss"].append(step_results["loss"])
             metric_tracker["mel_loss"].append(step_results["mel_loss"])
@@ -164,7 +167,7 @@ class FastSpeechTrainer:
         })
 
         if self.params["log_audio"]:
-            reconstructed_wav = self.Vocoder.inference(predicted_spectrogram).cpu()
+            reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :]).cpu()
             original_waveform = batch.waveform[random_idx]
             plt.plot(reconstructed_wav.squeeze(), label='reconstructed', alpha=.5)
             plt.plot(original_waveform.squeeze(), label='GT', alpha=.5)
