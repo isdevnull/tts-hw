@@ -130,7 +130,7 @@ class FastSpeechTrainer:
 
     @torch.no_grad()
     def validation_epoch(self, val_dataloader):
-        self.model.eval()
+        self.model = self.model.eval()
 
         metric_tracker = {
             "loss": [],
