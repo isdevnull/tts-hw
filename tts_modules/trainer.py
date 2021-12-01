@@ -63,7 +63,7 @@ class FastSpeechTrainer:
 
     def batch_step(self, batch):
 
-        reference_mel_specs = self.featurizer(batch.waveform)
+        reference_mel_specs = self.featurizer(batch.waveform.to(self.device))
         max_timeframe_length = reference_mel_specs.size(-1)
         mel_durations = batch.durations * max_timeframe_length,
         batch.durations = self.aligner(wavs=batch.waveform.to(self.device), wav_lengths=batch.waveform_length,
