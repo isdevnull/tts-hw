@@ -5,7 +5,7 @@ import torch.nn as nn
 class ConvolutionalFeedForward(nn.Module):
     def __init__(self, d_model: int, inter_feat: int, *args, **kwargs):
         super().__init__()
-        #self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=inter_feat, *args, **kwargs)
+        # self.conv1 = nn.Conv1d(in_channels=d_model, out_channels=inter_feat, *args, **kwargs)
         self.conv1 = nn.Sequential(
             nn.Conv1d(in_channels=d_model, out_channels=d_model, groups=d_model, *args, **kwargs),
             nn.Conv1d(in_channels=d_model, out_channels=inter_feat, kernel_size=1)
@@ -15,7 +15,7 @@ class ConvolutionalFeedForward(nn.Module):
             nn.Conv1d(in_channels=inter_feat, out_channels=inter_feat, groups=inter_feat, *args, **kwargs),
             nn.Conv1d(in_channels=inter_feat, out_channels=d_model, kernel_size=1)
         )
-        #self.conv2 = nn.Conv1d(in_channels=inter_feat, out_channels=d_model, *args, **kwargs)
+        # self.conv2 = nn.Conv1d(in_channels=inter_feat, out_channels=d_model, *args, **kwargs)
         self.relu2 = nn.ReLU(inplace=True)
 
     def forward(self, x):
@@ -38,13 +38,15 @@ class LayerNormResidualConnection(nn.Module):
 
 
 class FeedForwardTransformer(nn.Module):
-    def __init__(self, n_heads: int, d_model: int, inter_feat: int, p_dropout: float = 0.1, *args, **kwargs):
+    def __init__(self, n_heads: int, d_model: int, inter_feat: int, p_dropout: float = 0.1,
+                 return_attention: bool = False, *args, **kwargs):
         super().__init__()
         self.self_attention = MultiHeadedAttention(
             n_heads=n_heads,
             d_model=d_model,
             d_k=d_model // n_heads,
-            d_v=d_model // n_heads
+            d_v=d_model // n_heads,
+            return_attention=return_attention
         )
         self.conv_net = ConvolutionalFeedForward(d_model=d_model, inter_feat=inter_feat, padding=1, *args, **kwargs)
         self.res_layer1 = LayerNormResidualConnection(d_model=d_model, p_dropout=p_dropout)

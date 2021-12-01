@@ -12,10 +12,10 @@ class LengthRegulator(nn.Module):
         self.n_mels = n_mels
         self.duration_predictor = ConvNetDurationPredictor(d_model=d_model, p_dropout=p_dropout, *args, **kwargs)
 
-    def forward(self, x, teacher_durations: torch.Tensor = None, mel_spec_length: int = None):
+    def forward(self, x, teacher_durations: torch.Tensor = None, mel_spec_length: int = 80):
         log_pred = self.duration_predictor(x)
         if teacher_durations is not None:
-            pred_num_timeframes = torch.round(teacher_durations * self.alpha * mel_spec_length).int().view(x.size(0),
+            pred_num_timeframes = torch.round(teacher_durations * self.alpha).int().view(x.size(0),
                                                                                                            -1)
         else:
             pred_num_timeframes = torch.round(torch.exp(log_pred) * self.alpha).int().view(x.size(0), -1)

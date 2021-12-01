@@ -16,6 +16,10 @@ class LJSpeechDataset(torchaudio.datasets.LJSPEECH):
 
         return waveform, waveform_length, transcript, tokens, token_lengths
 
+    @property
+    def vocab_size(self):
+        return len(self._tokenizer.tokens)
+
     def decode(self, tokens, lengths):
         result = []
         for tokens_, length in zip(tokens, lengths):

@@ -1,7 +1,9 @@
-torchaudio
-torch
+torchaudio==0.10.0
+torch==1.10.0
 matplotlib
 librosa
 wandb
 torchinfo
 numpy
+googledrivedownloader
+pyyaml
