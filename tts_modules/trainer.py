@@ -78,7 +78,6 @@ class FastSpeechTrainer:
         mel_loss = self.mel_loss(pred_mel_specs, reference_mel_specs)
         dur_loss = self.duration_loss(pred_log_durations, mel_durations)
         loss = mel_loss + dur_loss
-        self.step += 1
 
         return {
             "predicted_spectrogram": pred_mel_specs,
@@ -91,15 +90,12 @@ class FastSpeechTrainer:
     def train_epoch(self, train_dataloader):
         self.model.train()
 
-
-
         for batch in train_dataloader:
             step_results = self.batch_step(batch)
 
             if self.step % self.params["logging_step"] == 0:
                 if self.scheduler is not None:
-                    step_results["cur_lr"] = self.scheduler.get_last_lr()
-                    print(self.scheduler.get_last_lr())
+                    step_results["cur_lr"] = self.scheduler.get_last_lr()[-1]
                 logging.info(
                     f"step {self.step}: loss = {step_results['loss'].item()} | "
                     f"mel_loss = {step_results['mel_loss'].item()} | "
@@ -129,9 +125,6 @@ class FastSpeechTrainer:
             if self.step % self.params["checkpoint_interval"] == 0:
                 self._save_checkpoint()
 
-
-
-
     @torch.no_grad()
     def validation_epoch(self, val_dataloader):
         self.model.eval()
@@ -147,6 +140,7 @@ class FastSpeechTrainer:
 
         for batch in val_dataloader:
             step_results = self.batch_step(batch)
+            self.step += 1
 
             if self.params["log_audio"]:
                 predicted_spectrogram = step_results["predicted_spectrogram"]
