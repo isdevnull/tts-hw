@@ -95,7 +95,7 @@ class FastSpeechTrainer:
 
             if self.step % self.params["logging_step"] == 0:
                 if self.scheduler is not None:
-                    step_results["cur_lr"] = self.scheduler.get_last_lr()[-1]
+                    step_results["cur_lr"] = self.scheduler.get_last_lr()[0]
                 logging.info(
                     f"step {self.step}: loss = {step_results['loss'].item()} | "
                     f"mel_loss = {step_results['mel_loss'].item()} | "
@@ -107,7 +107,7 @@ class FastSpeechTrainer:
                         "mel_loss": step_results["mel_loss"].item(),
                         "dur_loss": step_results["dur_loss"].item(),
                         "learning_rate": step_results["cur_lr"]
-                    }
+                    }, step=self.step
                 )
                 if self.config["model"]["return_attention"]:
                     idx = np.random.choice(self.config["batch_size"], replace=False)
@@ -116,8 +116,8 @@ class FastSpeechTrainer:
                             image = PIL.Image.open(plot_image_to_buf(attention_score[idx, head, :, :].cpu().numpy()))
                             wandb.log({
                                 f"Attention-{i}-head-{head}": wandb.Image(image)
-                            })
-                    self.model.attention_scores.clear()
+                            }, step=self.step)
+                self.model.attention_scores.clear()
             step_results["loss"].backward()
             self.optimizer.step()
             if self.scheduler is not None:
@@ -163,7 +163,7 @@ class FastSpeechTrainer:
             "val_loss": loss_avg,
             "val_mel_loss": mel_loss_avg,
             "val_dur_loss": dur_loss_avg
-        })
+        }, step=self.step)
 
         if self.params["log_audio"]:
             reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :].unsqueeze(0)).cpu()
@@ -178,7 +178,7 @@ class FastSpeechTrainer:
             wandb.log({
                 "Original Audio": wandb.Audio(original_waveform.squeeze().cpu().numpy(), sample_rate=sample_rate),
                 "Reconstructed Audio": wandb.Audio(reconstructed_wav.squeeze().cpu().numpy(), sample_rate=sample_rate)
-            })
+            }, step=self.step)
 
     def train(self, train_dataloader, valid_dataloader):
         for epoch in range(self.config["epochs"]):
