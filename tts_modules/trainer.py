@@ -93,7 +93,7 @@ class FastSpeechTrainer:
 
         if self.step % self.params["logging_step"] == 0:
             if self.scheduler is not None:
-                step_results["cur_lr"] = self.scheduler.get_lr()
+                step_results["cur_lr"] = self.scheduler.get_last_lr()
             logging.info(
                 f"step {self.step}: loss = {step_results['loss']} | "
                 f"mel_loss = {step_results['mel_loss']} | "
@@ -147,9 +147,9 @@ class FastSpeechTrainer:
             metric_tracker["mel_loss"].append(step_results["mel_loss"])
             metric_tracker["dur_loss"].append(step_results["dur_loss"])
 
-        loss_avg = metric_tracker["loss"].sum() / len(metric_tracker["loss"])
-        mel_loss_avg = metric_tracker["mel_loss"].sum() / len(metric_tracker["mel_loss"])
-        dur_loss_avg = metric_tracker["dur_loss"].sum() / len(metric_tracker["dur_loss"])
+        loss_avg = sum(metric_tracker["loss"]) / len(metric_tracker["loss"])
+        mel_loss_avg = sum(metric_tracker["mel_loss"]) / len(metric_tracker["mel_loss"])
+        dur_loss_avg = sum(metric_tracker["dur_loss"]) / len(metric_tracker["dur_loss"])
 
         logger.info(
             f"val_loss = {loss_avg} | "

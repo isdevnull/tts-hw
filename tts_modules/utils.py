@@ -9,5 +9,6 @@ def plot_image_to_buf(image_data, name=None):
     plt.title(name)
     buf = io.BytesIO()
     plt.savefig(buf, format='png')
+    plt.clf()
     buf.seek(0)
     return buf
