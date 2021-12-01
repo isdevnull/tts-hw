@@ -92,7 +92,7 @@ class FastSpeechTrainer:
 
         for i, batch in enumerate(train_dataloader):
             step_results = self.batch_step(batch)
-            self.step = (self.epoch - 1) * self.config["epoch_len"] + i
+            self.step = (self.epoch - 1) * self.config["epoch_len"] + i + 1
 
             if self.step % self.params["logging_step"] == 0:
                 if self.scheduler is not None:
@@ -128,7 +128,7 @@ class FastSpeechTrainer:
             if self.step % self.params["checkpoint_interval"] == 0:
                 self._save_checkpoint()
 
-            if i >= self.config["epoch_len"]:
+            if i + 1 >= self.config["epoch_len"]:
                 break
 
     @torch.no_grad()
@@ -167,7 +167,7 @@ class FastSpeechTrainer:
             "val_loss": loss_avg,
             "val_mel_loss": mel_loss_avg,
             "val_dur_loss": dur_loss_avg
-        }, step=(self.epoch * self.config["epoch_len"]))
+        }, step=(self.epoch * self.config["epoch_len"] + 1))
 
         if self.params["log_audio"]:
             reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :].unsqueeze(0)).cpu()
@@ -182,7 +182,7 @@ class FastSpeechTrainer:
             wandb.log({
                 "Original Audio": wandb.Audio(original_waveform.squeeze().cpu().numpy(), sample_rate=sample_rate),
                 "Reconstructed Audio": wandb.Audio(reconstructed_wav.squeeze().cpu().numpy(), sample_rate=sample_rate)
-            }, step=self.epoch * self.config["epoch_len"])
+            }, step=self.epoch * self.config["epoch_len"] + 1)
 
     def train(self, train_dataloader, valid_dataloader):
         for epoch in range(1, self.config["epochs"] + 1):
