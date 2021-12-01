@@ -78,15 +78,14 @@ class FastSpeechTrainer:
         mel_loss = self.mel_loss(pred_mel_specs, reference_mel_specs)
         dur_loss = self.duration_loss(pred_log_durations, mel_durations)
         loss = mel_loss + dur_loss
-        loss.backward()
         self.step += 1
 
         return {
             "predicted_spectrogram": pred_mel_specs,
             "predicted_log_durations": pred_log_durations,
-            "mel_loss": mel_loss.detach().item(),
-            "dur_loss": dur_loss.detach().item(),
-            "loss": loss.detach().item()
+            "mel_loss": mel_loss.item(),
+            "dur_loss": dur_loss.item(),
+            "loss": loss
         }
 
     def train_epoch(self, train_dataloader):
@@ -99,13 +98,13 @@ class FastSpeechTrainer:
             if self.scheduler is not None:
                 step_results["cur_lr"] = self.scheduler.get_last_lr()
             logging.info(
-                f"step {self.step}: loss = {step_results['loss']} | "
+                f"step {self.step}: loss = {step_results['loss'].item()} | "
                 f"mel_loss = {step_results['mel_loss']} | "
                 f"dur_loss = {step_results['dur_loss']} "
             )
             wandb.log(
                 {
-                    "loss": step_results["loss"],
+                    "loss": step_results["loss"].item(),
                     "mel_loss": step_results["mel_loss"],
                     "dur_loss": step_results["dur_loss"],
                     "learning_rate": step_results["cur_lr"]
@@ -123,6 +122,7 @@ class FastSpeechTrainer:
         if self.step % self.params["checkpoint_interval"] == 0:
             self._save_checkpoint()
 
+        step_results["loss"].backward()
         self.optimizer.step()
         self.optimizer.zero_grad()
         if self.scheduler is not None:
