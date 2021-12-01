@@ -173,7 +173,7 @@ class FastSpeechTrainer:
             plt.plot(original_waveform.squeeze(), label='GT', alpha=.5)
             plt.grid()
             plt.legend()
-            wandb.log({"Waveform Comparison", plt})
+            wandb.log({"Waveform Comparison": plt})
             plt.clf()
             sample_rate = self.featurizer.get_config.sample_rate
             wandb.log({
