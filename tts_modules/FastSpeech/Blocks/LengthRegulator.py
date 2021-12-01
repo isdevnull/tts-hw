@@ -16,7 +16,7 @@ class LengthRegulator(nn.Module):
         log_pred = self.duration_predictor(x)
         if teacher_durations is not None:
             pred_num_timeframes = torch.round(teacher_durations * self.alpha).int().view(x.size(0),
-                                                                                                           -1)
+                                                                                         -1)
         else:
             pred_num_timeframes = torch.round(torch.exp(log_pred) * self.alpha).int().view(x.size(0), -1)
         x = torch.stack(

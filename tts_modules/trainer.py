@@ -68,6 +68,7 @@ class FastSpeechTrainer:
         batch.durations = self.aligner(wavs=batch.waveform.to(self.device), wav_lengths=batch.waveform_length,
                                        texts=batch.transcript)
         mel_durations = batch.durations * max_timeframe_length
+        mel_durations = mel_durations.to(device)
         pred_mel_specs, pred_log_durations = self.model(batch.tokens.to(self.device),
                                                         teacher_durations=mel_durations,
                                                         mel_spec_length=max_timeframe_length)
