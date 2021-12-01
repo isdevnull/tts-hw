@@ -130,7 +130,6 @@ class FastSpeechTrainer:
 
     @torch.no_grad()
     def validation_epoch(self, val_dataloader):
-        self.step -= 1
         self.model.eval()
 
         metric_tracker = {
@@ -181,8 +180,6 @@ class FastSpeechTrainer:
                 "Original Audio": wandb.Audio(original_waveform.squeeze().cpu().numpy(), sample_rate=sample_rate),
                 "Reconstructed Audio": wandb.Audio(reconstructed_wav.squeeze().cpu().numpy(), sample_rate=sample_rate)
             }, step=self.step)
-
-        self.step += 1
 
     def train(self, train_dataloader, valid_dataloader):
         for epoch in range(self.config["epochs"]):
