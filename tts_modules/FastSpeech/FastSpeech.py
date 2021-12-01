@@ -41,6 +41,9 @@ class FastSpeech(nn.Module):
     def attention_scores(self):
         return self.attention_scores_list
 
+    def clear_attention_scores(self):
+        self.attention_scores_list.clear()
+
     def forward(self, x, teacher_durations: torch.Tensor = None, mel_spec_length: int = 80):
         mask1 = get_mask(x).unsqueeze(-2)
         embeddings = self.token_embeddings(x)

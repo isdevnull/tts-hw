@@ -1,17 +1,18 @@
-epochs: 3000
+epochs: 30
 model:
   embed_dim: 384
   return_attention: true
 optimizer:
-  lr: 0.0001
+  lr: 0.001
 scheduler:
   steps_per_epoch: 100
   anneal_strategy: "cos"
-  max_lr: 0.0002
-  epochs: 3000
+  max_lr: 0.001
+  epochs: 30
 batch_size: 16
 train_params:
   log_audio: true
   logging_step: 1
   checkpoint_interval: 10
 wandb_project: tts_hw
+epoch_len: 5

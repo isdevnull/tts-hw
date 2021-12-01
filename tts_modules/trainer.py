@@ -90,9 +90,9 @@ class FastSpeechTrainer:
     def train_epoch(self, train_dataloader):
         self.model.train()
 
-        for batch in train_dataloader:
+        for i, batch in enumerate(train_dataloader):
             step_results = self.batch_step(batch)
-            self.step += 1
+            self.step = (self.epoch - 1) * self.config["epoch_len"] + i
 
             if self.step % self.params["logging_step"] == 0:
                 if self.scheduler is not None:
@@ -119,7 +119,7 @@ class FastSpeechTrainer:
                             wandb.log({
                                 f"Attention-{i}-head-{head}": wandb.Image(image)
                             }, step=self.step)
-                self.model.attention_scores.clear()
+                self.model.clear_attention_scores()
             step_results["loss"].backward()
             self.optimizer.step()
             if self.scheduler is not None:
@@ -127,6 +127,9 @@ class FastSpeechTrainer:
 
             if self.step % self.params["checkpoint_interval"] == 0:
                 self._save_checkpoint()
+
+            if i >= self.config["epoch_len"]:
+                break
 
     @torch.no_grad()
     def validation_epoch(self, val_dataloader):
@@ -164,7 +167,7 @@ class FastSpeechTrainer:
             "val_loss": loss_avg,
             "val_mel_loss": mel_loss_avg,
             "val_dur_loss": dur_loss_avg
-        }, step=self.step)
+        }, step=(self.epoch * self.config["epoch_len"]))
 
         if self.params["log_audio"]:
             reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :].unsqueeze(0)).cpu()
@@ -179,10 +182,10 @@ class FastSpeechTrainer:
             wandb.log({
                 "Original Audio": wandb.Audio(original_waveform.squeeze().cpu().numpy(), sample_rate=sample_rate),
                 "Reconstructed Audio": wandb.Audio(reconstructed_wav.squeeze().cpu().numpy(), sample_rate=sample_rate)
-            }, step=self.step)
+            }, step=self.epoch * self.config["epoch_len"])
 
     def train(self, train_dataloader, valid_dataloader):
-        for epoch in range(self.config["epochs"]):
+        for epoch in range(1, self.config["epochs"] + 1):
             self.epoch = epoch
             logger.info(f"Starting training on epoch {self.epoch}...")
             self.train_epoch(train_dataloader)
