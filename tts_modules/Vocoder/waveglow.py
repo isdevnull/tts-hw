@@ -1,8 +1,11 @@
 import torch.nn as nn
 import torch
+import sys
 
 from pathlib import Path
 from google_drive_downloader import GoogleDriveDownloader as gdd
+
+sys.path.append("./pretrained/waveglow/")
 
 class Vocoder(nn.Module):
 
