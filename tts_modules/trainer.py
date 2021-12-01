@@ -61,7 +61,7 @@ class FastSpeechTrainer:
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
         torch.save(state, checkpoint_dir / f"checkpoint-step-{self.step}")
 
-    def step(self):
+    def batch_step(self, batch):
 
         reference_mel_specs = self.featurizer(batch.waveform)
         max_timeframe_length = reference_mel_specs.size(-1)
@@ -88,7 +88,7 @@ class FastSpeechTrainer:
         self.model.train()
 
         for batch in train_dataloader:
-            step_results = self.step(batch)
+            step_results = self.batch_step(batch)
 
         if self.step % self.params["logging_step"] == 0:
             if self.scheduler is not None:
@@ -138,7 +138,7 @@ class FastSpeechTrainer:
             predicted_spectrogram = None
 
         for i, batch in enumerate(val_dataloader):
-            step_results = self.step(batch)
+            step_results = self.batch_step(batch)
 
             if self.params["log_audio"] and i == random_idx:
                 predicted_spectrogram = step_results["predicted_spectrogram"]
