@@ -83,13 +83,15 @@ class FastSpeechTrainer:
         return {
             "predicted_spectrogram": pred_mel_specs,
             "predicted_log_durations": pred_log_durations,
-            "mel_loss": mel_loss.item(),
+            "mel_loss": mel_loss,
             "dur_loss": dur_loss.item(),
             "loss": loss
         }
 
     def train_epoch(self, train_dataloader):
         self.model.train()
+
+        self.optimizer.zero_grad()
 
         for batch in train_dataloader:
             step_results = self.batch_step(batch)
@@ -124,13 +126,12 @@ class FastSpeechTrainer:
 
         step_results["loss"].backward()
         self.optimizer.step()
-        self.optimizer.zero_grad()
         if self.scheduler is not None:
             self.scheduler.step()
 
     @torch.no_grad()
     def validation_epoch(self, val_dataloader):
-        self.model = self.model.eval()
+        self.model.eval()
 
         metric_tracker = {
             "loss": [],
