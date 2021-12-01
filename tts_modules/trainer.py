@@ -109,16 +109,16 @@ class FastSpeechTrainer:
                         "mel_loss": step_results["mel_loss"].item(),
                         "dur_loss": step_results["dur_loss"].item(),
                         "learning_rate": step_results["cur_lr"]
-                    }, step=self.step
+                    },
                 )
                 if self.config["model"]["return_attention"]:
                     idx = np.random.choice(self.config["batch_size"], replace=False)
-                    for i, attention_score in enumerate(self.model.attention_scores):
+                    for j, attention_score in enumerate(self.model.attention_scores):
                         for head in range(2):
                             image = PIL.Image.open(plot_image_to_buf(attention_score[idx, head, :, :].cpu().numpy()))
                             wandb.log({
-                                f"Attention-{i}-head-{head}": wandb.Image(image)
-                            }, step=self.step)
+                                f"Attention-{j}-head-{head}": wandb.Image(image)
+                            })
                 self.model.clear_attention_scores()
             step_results["loss"].backward()
             self.optimizer.step()
@@ -167,7 +167,7 @@ class FastSpeechTrainer:
             "val_loss": loss_avg,
             "val_mel_loss": mel_loss_avg,
             "val_dur_loss": dur_loss_avg
-        }, step=(self.epoch * self.config["epoch_len"] + 1))
+        })
 
         if self.params["log_audio"]:
             reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :].unsqueeze(0)).cpu()
@@ -182,7 +182,7 @@ class FastSpeechTrainer:
             wandb.log({
                 "Original Audio": wandb.Audio(original_waveform.squeeze().cpu().numpy(), sample_rate=sample_rate),
                 "Reconstructed Audio": wandb.Audio(reconstructed_wav.squeeze().cpu().numpy(), sample_rate=sample_rate)
-            }, step=self.epoch * self.config["epoch_len"] + 1)
+            })
 
     def train(self, train_dataloader, valid_dataloader):
         for epoch in range(1, self.config["epochs"] + 1):
