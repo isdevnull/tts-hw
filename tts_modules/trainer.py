@@ -175,7 +175,7 @@ class FastSpeechTrainer:
             plt.legend()
             wandb.log({"Waveform Comparison": plt})
             plt.clf()
-            sample_rate = self.featurizer.get_config.sample_rate
+            sample_rate = self.featurizer.get_config.sr
             wandb.log({
                 "Original Audio": wandb.Audio(original_waveform.squeeze().cpu().numpy(), sample_rate=sample_rate),
                 "Reconstructed Audio": wandb.Audio(reconstructed_wav.squeeze().cpu().numpy(), sample_rate=sample_rate)
