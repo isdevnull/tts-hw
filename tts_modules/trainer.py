@@ -111,7 +111,7 @@ class FastSpeechTrainer:
                 idx = np.random.choice(self.config["batch_size"], replace=False)
                 for i, attention_score in enumerate(self.model.attention_scores):
                     for head in range(2):
-                        image = PIL.Image(plot_image_to_buf(attention_score[idx, head, :, :].cpu().numpy()))
+                        image = PIL.Image.open(plot_image_to_buf(attention_score[idx, head, :, :].cpu().numpy()))
                         wandb.log({
                             f"Attention-{i}-head-{head}": wandb.Image(image)
                         })
