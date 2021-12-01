@@ -73,7 +73,7 @@ class FastSpeechTrainer:
         pred_mel_specs, pred_log_durations = self.model(batch.tokens.to(self.device),
                                                         teacher_durations=mel_durations,
                                                         mel_spec_length=max_timeframe_length)
-        pred_mel_specs = pred_mel_specs.transpose(1,2)
+        pred_mel_specs = pred_mel_specs.transpose(1, 2)
         pred_log_durations = pred_log_durations.squeeze(-1)
         mel_loss = self.mel_loss(pred_mel_specs, reference_mel_specs)
         dur_loss = self.duration_loss(pred_log_durations, mel_durations)
@@ -141,7 +141,7 @@ class FastSpeechTrainer:
             random_idx = np.random.choice(self.config["batch_size"])
             predicted_spectrogram = None
 
-        for batch in enumerate(val_dataloader):
+        for batch in val_dataloader:
             step_results = self.batch_step(batch)
 
             if self.params["log_audio"]:
