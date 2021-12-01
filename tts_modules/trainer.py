@@ -99,6 +99,7 @@ class FastSpeechTrainer:
             if self.step % self.params["logging_step"] == 0:
                 if self.scheduler is not None:
                     step_results["cur_lr"] = self.scheduler.get_last_lr()
+                    print(self.scheduler.get_last_lr())
                 logging.info(
                     f"step {self.step}: loss = {step_results['loss'].item()} | "
                     f"mel_loss = {step_results['mel_loss'].item()} | "
@@ -109,7 +110,7 @@ class FastSpeechTrainer:
                         "loss": step_results["loss"].item(),
                         "mel_loss": step_results["mel_loss"].item(),
                         "dur_loss": step_results["dur_loss"].item(),
-                        "learning_rate": step_results["cur_lr"].item()
+                        "learning_rate": step_results["cur_lr"]
                     }
                 )
                 if self.config["model"]["return_attention"]:
