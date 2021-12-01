@@ -77,7 +77,7 @@ class FastSpeechTrainer:
         pred_log_durations = pred_log_durations.squeeze(-1)
         mel_loss = self.mel_loss(pred_mel_specs, reference_mel_specs)
         dur_loss = self.duration_loss(pred_log_durations, mel_durations)
-        loss = mel_loss + dur_loss
+        loss = mel_loss.detach() + dur_loss.detach()
         self.step += 1
 
         return {
