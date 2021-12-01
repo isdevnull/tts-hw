@@ -117,6 +117,7 @@ class FastSpeechTrainer:
                             wandb.log({
                                 f"Attention-{i}-head-{head}": wandb.Image(image)
                             })
+                    self.model.attention_scores.clear()
             step_results["loss"].backward()
             self.optimizer.step()
             if self.scheduler is not None:
