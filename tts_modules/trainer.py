@@ -92,10 +92,12 @@ class FastSpeechTrainer:
 
         for batch in train_dataloader:
             step_results = self.batch_step(batch)
+            self.step += 1
 
             if self.step % self.params["logging_step"] == 0:
                 if self.scheduler is not None:
                     step_results["cur_lr"] = self.scheduler.get_last_lr()[0]
+                    print(self.scheduler.get_last_lr()[0])
                 logging.info(
                     f"step {self.step}: loss = {step_results['loss'].item()} | "
                     f"mel_loss = {step_results['mel_loss'].item()} | "
@@ -142,7 +144,6 @@ class FastSpeechTrainer:
 
         for batch in val_dataloader:
             step_results = self.batch_step(batch)
-            self.step += 1
 
             if self.params["log_audio"]:
                 predicted_spectrogram = step_results["predicted_spectrogram"]
