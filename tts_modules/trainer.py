@@ -183,7 +183,7 @@ class FastSpeechTrainer:
             sample_rate = self.featurizer.get_config.sr
             wandb.log({
                 "Predicted Spectrogram": wandb.Image(
-                    PIL.Image.open(plot_image_to_buf(predicted_spectrogram[random_idx].unsqueeze(0).cpu().numpy()))),
+                    PIL.Image.open(plot_image_to_buf(predicted_spectrogram[random_idx].cpu().numpy()))),
                 "Original Audio": wandb.Audio(original_waveform.squeeze().cpu().numpy(), sample_rate=sample_rate),
                 "Reconstructed Audio": wandb.Audio(reconstructed_wav.squeeze().cpu().numpy(), sample_rate=sample_rate)
             })
