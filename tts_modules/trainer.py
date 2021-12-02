@@ -66,6 +66,7 @@ class FastSpeechTrainer:
 
     def batch_step(self, batch):
 
+        self.model.clear_attention_scores()
         reference_mel_specs = self.featurizer(batch.waveform.to(self.device))
         max_timeframe_length = reference_mel_specs.size(-1)
         batch.durations = self.aligner(wavs=batch.waveform.to(self.device), wav_lengths=batch.waveform_length,
@@ -121,7 +122,6 @@ class FastSpeechTrainer:
                             wandb.log({
                                 f"Attention-{j}-head-{head}": wandb.Image(image)
                             })
-                    self.model.clear_attention_scores()
             step_results["loss"].backward()
             self.optimizer.step()
             if self.scheduler is not None:
@@ -174,7 +174,7 @@ class FastSpeechTrainer:
         if self.params["log_audio"]:
             reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :].unsqueeze(0)).cpu()
             original_waveform = batch.waveform[random_idx]
-            plt.figure(figsize=(15, 10))
+            plt.figure(figsize=(20, 15))
             plt.plot(reconstructed_wav.squeeze(), label='reconstructed', alpha=.5)
             plt.plot(original_waveform.squeeze(), label='GT', alpha=.5)
             plt.grid()
