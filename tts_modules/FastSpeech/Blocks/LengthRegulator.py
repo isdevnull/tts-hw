@@ -24,15 +24,15 @@ class LengthRegulator(nn.Module):
                                                                                          -1)
         else:
             pred_num_timeframes = torch.round(torch.exp(log_pred) * self.alpha).int().view(x.size(0), -1)
-        # x = torch.stack(
-        #     [F.pad(x[i, ...].repeat_interleave(pred_num_timeframes[i, ...], dim=0),
-        #            (0, 0, 0, mel_spec_length - pred_num_timeframes[i].sum()), value=pad_value) for i in
-        #      range(x.size(0))],
-        #     dim=0
-        # )
         x = torch.stack(
-            [x[i, ...].repeat_interleave(pred_num_timeframes[i, ...], dim=0) for i in range(x.size(0))],
+            [F.pad(x[i, ...].repeat_interleave(pred_num_timeframes[i, ...], dim=0),
+                   (0, 0, 0, pred_num_timeframes.sum(1).max() - pred_num_timeframes[i].sum()), value=pad_value) for i in
+             range(x.size(0))],
             dim=0
         )
-        x = pad_sequence(x, batch_first=True)
+        # x = torch.stack(
+        #     [x[i, ...].repeat_interleave(pred_num_timeframes[i, ...], dim=0) for i in range(x.size(0))],
+        #     dim=0
+        # )
+        # x = pad_sequence(x, batch_first=True)
         return x, log_pred
