@@ -18,13 +18,13 @@ class ConvNetDurationPredictor(nn.Module):
         super().__init__()
         self.net = nn.Sequential(
             ConvolutionWrapper(in_channels=d_model, out_channels=d_model, padding=1, *args, **kwargs),
+            nn.ReLU(inplace=True),
             nn.LayerNorm(d_model),
             nn.Dropout(p=p_dropout),
-            nn.ReLU(inplace=True),
             ConvolutionWrapper(in_channels=d_model, out_channels=d_model, padding=1, *args, **kwargs),
+            nn.ReLU(inplace=True),
             nn.LayerNorm(d_model),
             nn.Dropout(p=p_dropout),
-            nn.ReLU(inplace=True),
             nn.Linear(in_features=d_model, out_features=1)
         )
 
