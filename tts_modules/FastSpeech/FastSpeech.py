@@ -60,7 +60,7 @@ class FastSpeech(nn.Module):
 
         aligned_hidden, log_duration_prediction = self.length_regulator(first_hidden_output, teacher_durations,
                                                                         mel_spec_length)
-        mask2 = get_mask(aligned_hidden, pad_value=pad_value)
+        mask2 = get_mask(aligned_hidden, pad_value=0.0)
         mask2 = mask2.all(dim=2).unsqueeze(-2)
         positional_aligned_hidden = self.pos_enc_layer(aligned_hidden)
 
