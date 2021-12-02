@@ -28,7 +28,7 @@ class FastSpeechTrainer:
         self.scheduler = scheduler
         self.aligner = aligner
         self.featurizer = featurizer
-        self.mel_loss = nn.MSELoss()
+        self.mel_loss = nn.L1Loss()
         self.duration_loss = nn.MSELoss()
         self.step = 0
         self.epoch = 0
