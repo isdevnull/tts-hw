@@ -54,5 +54,5 @@ class MultiHeadedAttention(nn.Module):
                                                         return_attention=self.return_attention)
         if self.attention_score is not None:
             self.attention_score = self.attention_score.detach()
-        outputs = self.kqv_weights[-1](output_values.view(batch_size, -1, self.n_heads * self.d_v))
+        outputs = self.final_proj(output_values.view(batch_size, -1, self.n_heads * self.d_v))
         return outputs
