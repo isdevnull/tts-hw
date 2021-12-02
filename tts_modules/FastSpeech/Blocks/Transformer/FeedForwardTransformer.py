@@ -36,6 +36,9 @@ class LayerNormResidualConnection(nn.Module):
         # pre-norm instead of post-norm
         return x + self.dropout(sublayer(self.layernorm(x)))
 
+    def forward_convolution(self, x, sublayer_conv):
+        return x + self.dropout(self.layernorm(sublayer_conv(x)))
+
 
 class FeedForwardTransformer(nn.Module):
     def __init__(self, n_heads: int, d_model: int, inter_feat: int, p_dropout: float = 0.1,
@@ -54,5 +57,5 @@ class FeedForwardTransformer(nn.Module):
 
     def forward(self, x, mask=None):
         output_inter = self.res_layer1(x, lambda y: self.self_attention(y, y, y, mask=mask))
-        output_final = self.res_layer2(output_inter, self.conv_net)
+        output_final = self.res_layer2.forward_convolution(output_inter, self.conv_net)
         return output_final
