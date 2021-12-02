@@ -62,7 +62,7 @@ class FastSpeechTrainer:
         }
         checkpoint_dir = root / "checkpoints"
         checkpoint_dir.mkdir(parents=True, exist_ok=True)
-        torch.save(state, checkpoint_dir / f"checkpoint-step-{self.step}")
+        torch.save(state, checkpoint_dir / f"checkpoint-last.pt")
 
     def batch_step(self, batch):
 
@@ -174,6 +174,7 @@ class FastSpeechTrainer:
         if self.params["log_audio"]:
             reconstructed_wav = self.Vocoder.inference(predicted_spectrogram[random_idx, :, :].unsqueeze(0)).cpu()
             original_waveform = batch.waveform[random_idx]
+            plt.figure(figsize=(15, 10))
             plt.plot(reconstructed_wav.squeeze(), label='reconstructed', alpha=.5)
             plt.plot(original_waveform.squeeze(), label='GT', alpha=.5)
             plt.grid()
