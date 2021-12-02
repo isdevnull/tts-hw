@@ -16,7 +16,7 @@ class ConvolutionalFeedForward(nn.Module):
             nn.Conv1d(in_channels=inter_feat, out_channels=d_model, kernel_size=1)
         )
         # self.conv2 = nn.Conv1d(in_channels=inter_feat, out_channels=d_model, *args, **kwargs)
-        #self.relu2 = nn.ReLU(inplace=True)
+        self.relu2 = nn.ReLU(inplace=True)
 
     def forward(self, x):
         x = x.transpose(1, 2)
