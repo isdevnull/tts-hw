@@ -42,7 +42,7 @@ class FastSpeech(nn.Module):
         return self.attention_scores_list
 
     def clear_attention_scores(self):
-        self.attention_scores_list.clear()
+        self.attention_scores_list = []
 
     def forward(self, x, teacher_durations: torch.Tensor = None, mel_spec_length: int = 80):
         mask1 = get_mask(x).unsqueeze(-2)

@@ -1,3 +1,5 @@
+import tempfile
+
 import PIL
 import torch.nn as nn
 import torch
@@ -8,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from tts_modules.utils import plot_image_to_buf
+from tts_modules.utils import plot_image_to_buf, plot_plt_to_buf
 from tts_modules.Vocoder.waveglow import Vocoder
 
 logging.basicConfig(level=logging.INFO)
@@ -92,7 +94,7 @@ class FastSpeechTrainer:
 
         for i, batch in enumerate(train_dataloader):
             step_results = self.batch_step(batch)
-            self.step = (self.epoch - 1) * self.config["epoch_len"] + i + 1
+            self.step = (self.epoch - 1) * self.config["epoch_len"] + i
 
             if self.step % self.params["logging_step"] == 0:
                 if self.scheduler is not None:
@@ -109,7 +111,7 @@ class FastSpeechTrainer:
                         "mel_loss": step_results["mel_loss"].item(),
                         "dur_loss": step_results["dur_loss"].item(),
                         "learning_rate": step_results["cur_lr"]
-                    },
+                    }
                 )
                 if self.config["model"]["return_attention"]:
                     idx = np.random.choice(self.config["batch_size"], replace=False)
@@ -119,7 +121,7 @@ class FastSpeechTrainer:
                             wandb.log({
                                 f"Attention-{j}-head-{head}": wandb.Image(image)
                             })
-                self.model.clear_attention_scores()
+                    self.model.clear_attention_scores()
             step_results["loss"].backward()
             self.optimizer.step()
             if self.scheduler is not None:
@@ -176,10 +178,12 @@ class FastSpeechTrainer:
             plt.plot(original_waveform.squeeze(), label='GT', alpha=.5)
             plt.grid()
             plt.legend()
-            wandb.log({"Waveform Comparison": plt})
-            plt.clf()
+            plt.title("Waveform Comparison")
+            wandb.log({"Waveform Comparison": wandb.Image(PIL.Image.open(plot_plt_to_buf(plt)))})
             sample_rate = self.featurizer.get_config.sr
             wandb.log({
+                "Predicted Spectrogram": wandb.Image(
+                    PIL.Image.open(plot_image_to_buf(predicted_spectrogram[random_idx].unsqueeze(0).cpu().numpy()))),
                 "Original Audio": wandb.Audio(original_waveform.squeeze().cpu().numpy(), sample_rate=sample_rate),
                 "Reconstructed Audio": wandb.Audio(reconstructed_wav.squeeze().cpu().numpy(), sample_rate=sample_rate)
             })
