@@ -3,6 +3,9 @@ import torch
 import torch.nn.functional as F
 
 from tts_modules.FastSpeech.Blocks.DurationPredictor import ConvNetDurationPredictor
+from tts_modules.Featurizer.MelSpectrogram import MelSpectrogramConfig
+
+pad_value = MelSpectrogramConfig().pad_value
 
 
 class LengthRegulator(nn.Module):
@@ -21,7 +24,8 @@ class LengthRegulator(nn.Module):
             pred_num_timeframes = torch.round(torch.exp(log_pred) * self.alpha).int().view(x.size(0), -1)
         x = torch.stack(
             [F.pad(x[i, ...].repeat_interleave(pred_num_timeframes[i, ...], dim=0),
-                   (0, 0, 0, mel_spec_length - pred_num_timeframes[i].sum()), value=0.0) for i in range(x.size(0))],
+                   (0, 0, 0, mel_spec_length - pred_num_timeframes[i].sum()), value=pad_value) for i in
+             range(x.size(0))],
             dim=0
         )
         return x, log_pred
