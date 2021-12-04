@@ -77,8 +77,12 @@ class FastSpeechTrainer:
         pred_mel_specs, pred_log_durations = self.model(batch.tokens.to(self.device),
                                                         teacher_durations=mel_durations,
                                                         mel_spec_length=max_timeframe_length)
-        # pred_mel_specs = F.pad(pred_mel_specs, (0, 0, 0, max_timeframe_length - pred_mel_specs.size(-2)),
-        #                        value=self.featurizer.get_config.pad_value)
+        if pred_mel_specs.size(-2) < max_timeframe_length:
+            pred_mel_specs = F.pad(pred_mel_specs, (0, 0, 0, max_timeframe_length - pred_mel_specs.size(-2)),
+                                   value=self.featurizer.get_config.pad_value)
+        else:
+            reference_mel_specs = F.pad(reference_mel_specs, (0, 0, 0, pred_mel_specs.size(-2) - max_timeframe_length),
+                                    value=self.featurizer.get_config.pad_value)
         pred_mel_specs = pred_mel_specs.transpose(1, 2)
         pred_log_durations = pred_log_durations.squeeze(-1)
         mel_loss = self.mel_loss(pred_mel_specs, reference_mel_specs)
