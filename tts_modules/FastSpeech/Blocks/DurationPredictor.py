@@ -25,7 +25,8 @@ class ConvNetDurationPredictor(nn.Module):
             nn.ReLU(inplace=True),
             nn.LayerNorm(d_model),
             nn.Dropout(p=p_dropout),
-            nn.Linear(in_features=d_model, out_features=1)
+            nn.Linear(in_features=d_model, out_features=1),
+            nn.ReLU(inplace=True)
         )
 
     def forward(self, x):

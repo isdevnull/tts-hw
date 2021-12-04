@@ -126,6 +126,9 @@ class FastSpeechTrainer:
                                 f"Attention-{j}-head-{head}": wandb.Image(image)
                             })
             step_results["loss"].backward()
+
+            nn.utils.clip_grad_norm(self.model.parameters(), 1.0)
+
             self.optimizer.step()
             if self.scheduler is not None:
                 self.scheduler.step()

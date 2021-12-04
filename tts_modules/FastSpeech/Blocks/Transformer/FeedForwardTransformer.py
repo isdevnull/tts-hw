@@ -54,8 +54,9 @@ class FeedForwardTransformer(nn.Module):
         self.conv_net = ConvolutionalFeedForward(d_model=d_model, inter_feat=inter_feat, padding=1, *args, **kwargs)
         self.res_layer1 = LayerNormResidualConnection(d_model=d_model, p_dropout=p_dropout)
         self.res_layer2 = LayerNormResidualConnection(d_model=d_model, p_dropout=p_dropout)
+        self.res_layer3 = nn.LayerNorm(d_model)
 
     def forward(self, x, mask=None):
         output_inter = self.res_layer1(x, lambda y: self.self_attention(y, y, y, mask=mask))
-        output_final = self.res_layer2.forward_convolution(output_inter, self.conv_net)
-        return output_final
+        output_final = self.res_layer2(output_inter, self.conv_net)
+        return self.res_layer3(output_final)
