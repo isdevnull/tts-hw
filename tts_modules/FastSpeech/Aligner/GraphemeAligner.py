@@ -87,7 +87,7 @@ class GraphemeAligner(nn.Module):
         durations = pad_sequence(durations).transpose(0, 1)
 
         # add normalization (durations don't sum to one)
-        durations /= durations.sum(1).unsqueeze(-1)
+        #durations /= durations.sum(1).unsqueeze(-1)
         return durations
 
     @staticmethod
