@@ -87,7 +87,8 @@ class FastSpeechTrainer:
                                         value=self.featurizer.get_config.pad_value)
         pred_log_durations = pred_log_durations.squeeze(-1)
         mel_loss = self.mel_loss(pred_mel_specs, reference_mel_specs)
-        dur_loss = self.duration_loss(torch.exp(pred_log_durations), mel_durations)
+        log_mel_durations = torch.nan_to_num(torch.log(mel_durations), neginf=0)
+        dur_loss = self.duration_loss(pred_log_durations, log_mel_durations)
         loss = mel_loss + dur_loss
 
         return {
